@@ -468,8 +468,16 @@ extract_acl(ACL) ->
     [extract_grant(Item) || Item <- ACL].
 
 extract_grant(Node) ->
-    [{grantee, extract_user(xmerl_xpath:string("Grantee", Node))},
+    [{grantee, extract_grantee(hd(xmerl_xpath:string("Grantee", Node)))},
      {permission, decode_permission(erlcloud_xml:get_text("Permission", Node))}].
+
+extract_grantee(Node) ->
+    erlcloud_xml:decode([
+        {type, {".", "xsi:type"}, text},
+        {id, "ID", optional_text},
+        {display_name, "DisplayName", optional_text},
+        {uri, "URI", optional_text}
+    ], Node).
 
 encode_permission(full_control) -> "FULL_CONTROL";
 encode_permission(write)        -> "WRITE";
